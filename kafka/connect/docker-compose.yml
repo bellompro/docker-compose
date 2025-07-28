@@ -1,0 +1,70 @@
+services:
+  connect-1:
+    image: confluentinc/cp-kafka-connect:7.9.2
+    container_name: connect-1
+    restart: on-failure
+    networks:
+      - kafka-net
+      - database-net
+    ports:
+      - 8081:8083
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: broker-1:9092,broker-2:9092,broker-3:9092
+      CONNECT_REST_PORT: 8083
+      CONNECT_REST_ADVERTISED_HOST_NAME: connect-1
+      CONNECT_GROUP_ID: payment-connect-cluster
+      CONNECT_CONFIG_STORAGE_TOPIC: connect-configs
+      CONNECT_OFFSET_STORAGE_TOPIC: connect-offsets
+      CONNECT_STATUS_STORAGE_TOPIC: connect-status
+      CONNECT_KEY_CONVERTER: org.apache.kafka.connect.storage.StringConverter
+      CONNECT_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: 'false'
+      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: 'false'
+      CONNECT_LOG4J_LOGGERS: 'org.apache.kafka.connect.runtime.rest=WARN,org.apache.kafka.connect.runtime.WorkerSinkTask=WARN,org.apache.kafka.connect.runtime.WorkerSourceTask=WARN'
+      CONNECT_LOG4J_ROOT_LOGLEVEL: INFO
+      CONNECT_PLUGIN_PATH: '/usr/share/java,/plugins'
+      CONNECT_PLUGIN_DISCOVERY: 'only_scan'
+    volumes:
+      - connect-plugins:/plugins
+  
+  connect-2:
+    image: confluentinc/cp-kafka-connect:7.9.2
+    container_name: connect-2
+    restart: on-failure
+    networks:
+      - kafka-net
+      - database-net
+    ports:
+      - 8082:8083
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: broker-1:9092,broker-2:9092,broker-3:9092
+      CONNECT_REST_PORT: 8083
+      CONNECT_REST_ADVERTISED_HOST_NAME: connect-2
+      CONNECT_GROUP_ID: payment-connect-cluster
+      CONNECT_CONFIG_STORAGE_TOPIC: connect-configs
+      CONNECT_OFFSET_STORAGE_TOPIC: connect-offsets
+      CONNECT_STATUS_STORAGE_TOPIC: connect-status
+      CONNECT_KEY_CONVERTER: org.apache.kafka.connect.storage.StringConverter
+      CONNECT_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: 'false'
+      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: 'false'
+      CONNECT_LOG4J_LOGGERS: 'org.apache.kafka.connect.runtime.rest=WARN,org.apache.kafka.connect.runtime.WorkerSinkTask=WARN,org.apache.kafka.connect.runtime.WorkerSourceTask=WARN'
+      CONNECT_LOG4J_ROOT_LOGLEVEL: INFO
+      CONNECT_PLUGIN_PATH: '/usr/share/java,/plugins'
+      CONNECT_PLUGIN_DISCOVERY: 'only_scan'
+    volumes:
+      - connect-plugins:/plugins
+
+networks:
+  kafka-net:
+    external: true
+  database-net:
+    external: true
+      
+volumes:
+  connect-plugins:
+    driver: local
+    driver_opts:
+      type: none
+      device: ~/repositories/bellomuhammad/docker/data/kafka-data/connect-plugins
+      o: bind

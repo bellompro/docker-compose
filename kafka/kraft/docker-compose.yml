@@ -2,6 +2,7 @@ services:
   controller-1:
     image: apache/kafka:latest
     container_name: controller-1
+    restart: on-failure
     networks:
       - kafka-net
     environment:
@@ -12,12 +13,15 @@ services:
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@controller-1:9093,2@controller-2:9093,3@controller-3:9093
       KAFKA_CONTROLLER_QUORUM_BOOTSTRAP_SERVERS: controller-1:9093,controller-2:9093,controller-3:9093
-      KAFKA_LOG_DIRS: /tmp/kafka-logs
+      KAFKA_LOG_DIRS: /controller-1/controller-logs
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+    volumes:
+      - controller-1-data:/controller-1/controller-logs:rw
 
   controller-2:
     image: apache/kafka:latest
     container_name: controller-2
+    restart: on-failure
     networks:
       - kafka-net
     environment:
@@ -28,12 +32,15 @@ services:
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@controller-1:9093,2@controller-2:9093,3@controller-3:9093
       KAFKA_CONTROLLER_QUORUM_BOOTSTRAP_SERVERS: controller-1:9093,controller-2:9093,controller-3:9093
-      KAFKA_LOG_DIRS: /tmp/kafka-logs
+      KAFKA_LOG_DIRS: /controller-2/controller-logs
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+    volumes:
+      - controller-2-data:/controller-2/controller-logs:rw
 
   controller-3:
     image: apache/kafka:latest
     container_name: controller-3
+    restart: on-failure
     networks:
       - kafka-net
     environment:
@@ -44,12 +51,15 @@ services:
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@controller-1:9093,2@controller-2:9093,3@controller-3:9093
       KAFKA_CONTROLLER_QUORUM_BOOTSTRAP_SERVERS: controller-1:9093,controller-2:9093,controller-3:9093
-      KAFKA_LOG_DIRS: /tmp/kafka-logs
+      KAFKA_LOG_DIRS: /controller-3/controller-logs
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+    volumes:
+      - controller-3-data:/controller-3/controller-logs:rw
 
   broker-1:
     image: apache/kafka:latest
     container_name: broker-1
+    restart: on-failure
     networks:
       - kafka-net
     ports:
@@ -63,7 +73,7 @@ services:
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,INTERNAL:PLAINTEXT
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@controller-1:9093,2@controller-2:9093,3@controller-3:9093
-      KAFKA_LOG_DIRS: /tmp/kafka-logs
+      KAFKA_LOG_DIRS: /broker-1/kafka-logs
       KAFKA_NUM_PARTITIONS: 3
       KAFKA_REPLICATION_FACTOR: 3
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
@@ -72,6 +82,8 @@ services:
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_MIN_INSYNC_REPLICAS: 2
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
+    volumes:
+      - kafka-1-data:/broker-1/kafka-logs:rw
     depends_on:
       - controller-1
       - controller-2
@@ -80,6 +92,7 @@ services:
   broker-2:
     image: apache/kafka:latest
     container_name: broker-2
+    restart: on-failure
     networks:
       - kafka-net
     ports:
@@ -93,7 +106,7 @@ services:
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,INTERNAL:PLAINTEXT
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@controller-1:9093,2@controller-2:9093,3@controller-3:9093
-      KAFKA_LOG_DIRS: /tmp/kafka-logs
+      KAFKA_LOG_DIRS: /broker-2/kafka-logs
       KAFKA_NUM_PARTITIONS: 3
       KAFKA_REPLICATION_FACTOR: 3
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
@@ -102,6 +115,8 @@ services:
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_MIN_INSYNC_REPLICAS: 2
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
+    volumes:
+      - kafka-2-data:/broker-2/kafka-logs:rw
     depends_on:
       - controller-1
       - controller-2
@@ -110,6 +125,7 @@ services:
   broker-3:
     image: apache/kafka:latest
     container_name: broker-3
+    restart: on-failure
     networks:
       - kafka-net
     ports:
@@ -123,7 +139,7 @@ services:
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,INTERNAL:PLAINTEXT
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@controller-1:9093,2@controller-2:9093,3@controller-3:9093
-      KAFKA_LOG_DIRS: /tmp/kafka-logs
+      KAFKA_LOG_DIRS: /broker-3/kafka-logs
       KAFKA_NUM_PARTITIONS: 3
       KAFKA_REPLICATION_FACTOR: 3
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
@@ -132,6 +148,8 @@ services:
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_MIN_INSYNC_REPLICAS: 2
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
+    volumes:
+      - kafka-3-data:/broker-3/kafka-logs:rw
     depends_on:
       - controller-1
       - controller-2
@@ -140,6 +158,47 @@ services:
 networks:
   kafka-net:
     driver: bridge
+    name: kafka-net
+
+volumes:
+  kafka-1-data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ~/repositories/bellomuhammad/docker/data/kafka-data/kafka-1-data
+      o: bind
+  kafka-2-data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ~/repositories/bellomuhammad/docker/data/kafka-data/kafka-2-data
+      o: bind
+  kafka-3-data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ~/repositories/bellomuhammad/docker/data/kafka-data/kafka-3-data
+      o: bind
+  controller-1-data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ~/repositories/bellomuhammad/docker/data/kafka-data/controller-1-data
+      o: bind
+  controller-2-data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ~/repositories/bellomuhammad/docker/data/kafka-data/controller-2-data
+      o: bind
+  controller-3-data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ~/repositories/bellomuhammad/docker/data/kafka-data/controller-3-data
+      o: bind
+
+
 # This Docker Compose file sets up a Kafka cluster with three controllers and three brokers.
 # Each broker is configured to communicate with the controllers and has its own advertised listeners.
 # The controllers are set up to handle the cluster's metadata and coordination tasks.
